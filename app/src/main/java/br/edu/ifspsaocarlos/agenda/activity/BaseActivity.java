@@ -3,8 +3,8 @@ package br.edu.ifspsaocarlos.agenda.activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.ContextMenu;
@@ -19,16 +19,16 @@ import android.widget.Toast;
 import java.util.List;
 
 import br.edu.ifspsaocarlos.agenda.R;
-import br.edu.ifspsaocarlos.agenda.adapter.ContatoArrayAdapter;
-import br.edu.ifspsaocarlos.agenda.data.ContatoDAO;
-import br.edu.ifspsaocarlos.agenda.model.Contato;
+import br.edu.ifspsaocarlos.agenda.adapter.ContactArrayAdapter;
+import br.edu.ifspsaocarlos.agenda.data.ContactDAO;
+import br.edu.ifspsaocarlos.agenda.model.Contact;
 
 public class BaseActivity extends AppCompatActivity {
 
-    protected ContatoDAO cDAO=new ContatoDAO(this);
-    public ListView list;
-    public ContatoArrayAdapter adapter;
-    protected SearchView searchView;
+    protected ContactDAO contactDAO = new ContactDAO(this);
+    public ListView mListView;
+    public ContactArrayAdapter mContactArrayAdapter;
+    protected SearchView mSearchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,14 +39,14 @@ public class BaseActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        list = (ListView) findViewById(R.id.listView);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView = (ListView) findViewById(R.id.listView);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> adapterView, View arg1, int arg2,
                                     long arg3) {
-                Contato contact = (Contato) adapterView.getAdapter().getItem(arg2);
-                Intent inte = new Intent(getApplicationContext(), DetalheActivity.class);
+                Contact contact = (Contact) adapterView.getAdapter().getItem(arg2);
+                Intent inte = new Intent(getApplicationContext(), DetailActivity.class);
                 inte.putExtra("contact", contact);
                 startActivityForResult(inte, 0);
 
@@ -55,27 +55,25 @@ public class BaseActivity extends AppCompatActivity {
         });
 
 
-        registerForContextMenu(list);
+        registerForContextMenu(mListView);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        searchView = (SearchView) menu.findItem(R.id.pesqContato).getActionView();
+        mSearchView = (SearchView) menu.findItem(R.id.searchContact).getActionView();
 
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
-        searchView.setIconifiedByDefault(true);
+        mSearchView.setIconifiedByDefault(true);
         return true;
     }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v,
                                     ContextMenu.ContextMenuInfo menuInfo) {
-        // TODO Auto-generated method stub
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater m = getMenuInflater();
         m.inflate(R.menu.menu_context, menu);
@@ -85,14 +83,14 @@ public class BaseActivity extends AppCompatActivity {
     public boolean onContextItemSelected(MenuItem item) {
 
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        ContatoArrayAdapter adapter = (ContatoArrayAdapter)list.getAdapter();
-        Contato contact = adapter.getItem(info.position);
+        ContactArrayAdapter adapter = (ContactArrayAdapter) mListView.getAdapter();
+        Contact contact = adapter.getItem(info.position);
 
 
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.delete_item:
-                cDAO.deleteContact(contact);
-                Toast.makeText(getApplicationContext(), "Removido com sucesso", Toast.LENGTH_SHORT).show();
+                contactDAO.deleteContact(contact);
+                Toast.makeText(getApplicationContext(), R.string.msg_delete_successful, Toast.LENGTH_SHORT).show();
                 buildListView();
                 return true;
         }
@@ -101,16 +99,16 @@ public class BaseActivity extends AppCompatActivity {
 
 
     protected void buildListView() {
-        List<Contato> values = cDAO.buscaTodosContatos();
-        adapter = new ContatoArrayAdapter(this, values);
-        list.setAdapter(adapter);
+        List<Contact> values = contactDAO.buscaTodosContatos();
+        mContactArrayAdapter = new ContactArrayAdapter(this, values);
+        mListView.setAdapter(mContactArrayAdapter);
 
     }
 
     protected void buildSearchListView(String query) {
-        List<Contato> values = cDAO.buscaContato(query);
-        adapter= new ContatoArrayAdapter(this, values);
-        list.setAdapter(adapter);
+        List<Contact> values = contactDAO.buscaContato(query);
+        mContactArrayAdapter = new ContactArrayAdapter(this, values);
+        mListView.setAdapter(mContactArrayAdapter);
 
     }
 
